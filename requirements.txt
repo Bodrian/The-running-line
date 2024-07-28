@@ -1,10 +1,2 @@
-moviepy
+opencv-python
 
-ImageMagick - должен быть установлен на комп
-sudo apt install libmagick++-dev
-sudo apt install vim
-sudo vim /etc/ImageMagick-6/policy.xml
-заменить строчку
-<policy domain="path" rights="none" pattern="@*" />
-на
-<!--<policy domain="path" rights="none" pattern="@*" /> -->

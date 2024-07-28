@@ -1,25 +1,36 @@
-from moviepy.editor import TextClip, CompositeVideoClip, ImageClip
+import cv2
 import numpy as np
 
+def runing_line_cv2(text: str):
 
-def runing_line(text, video_width=100, video_height=100, duration=3, fps=30):
-    # Создаем текстовый клип
-    text_clip = TextClip(text, stroke_width=5, method='caption', fontsize=14, align='West', color='white', bg_color='black', size=(video_width, video_height))
+    width, height = 100, 100 # Размеры видео (ширина x высота)
+    fourcc = cv2.VideoWriter_fourcc(*'xvid')  # Use 'XVID' for H .264 codec
+    out = cv2.VideoWriter("output.mp4", fourcc, 24, (width, height))
+    background = np.zeros((height, width, 3), dtype='uint8') # Создаем кадр с черным фоном
 
-    text_clip = text_clip.set_position(
-        lambda t: (video_width - text_clip.w + (t * video_width / duration), video_height / 2 - text_clip.h / 2))
+    # Устанавливаем параметры шрифта
+    font = cv2.FONT_HERSHEY_COMPLEX
+    font_scale = 3
+    font_thickness = 3
+    font_color = (255, 255, 255)
 
-    text_clip = text_clip.set_duration(duration)
+    # получение размеров текста в пикселях
+    message_size = cv2.getTextSize(text, font, font_scale, font_thickness)
+    print(message_size)
+    # Начальные координаты для бегущей строки: x - ширина видео, y - середина высоты видео
+    x, y = 0, height-20
 
-    # Создаем пустой видеофон
-    background = np.zeros((video_height, video_width, 3), dtype='uint8')
-    background_clip = ImageClip(background).set_duration(duration)
+    while True:
+        background.fill(0)
+        x -= len(text) # сробега строки скорректирована согласно длине, чтобы уложиться в 3 секунды
+        cv2.putText(background, text, (x, y), font, font_scale, font_color, font_thickness)
+        out.write(background)
+        if x + message_size[0][0] < 0: # завершение видео при достижении текста левой части экрана
+            break
 
-    # Создаем итоговый клип
-    final_clip = CompositeVideoClip([background_clip, text_clip])
-    final_clip.write_videofile('runing_line.mp4', fps=fps)
+    out.release() # Закрываем видеопоток
+    return
 
-
-if __name__ == "__main__":
-    input_text = input("Введите строку для бегущей строки: ")
-    runing_line(input_text)
+if __name__ == '__main__':
+    text = input('Введите текст бегущей строки: ')
+    runing_line_cv2(text)
